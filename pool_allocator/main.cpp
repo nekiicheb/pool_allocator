@@ -52,36 +52,40 @@ void AllocateFromOverflowPool() {
     PoolAllocator pool;
     std::uint8_t* expected = nullptr;
     std::uint8_t* received;
-    for( auto i = 0; i < NUMBER_OF_BLOCKS + 1; ++i ) {
-        received = static_cast<uint8_t*>( pool.malloc( BLOCK_SIZE ) );
+    for (auto i = 0; i < NUMBER_OF_BLOCKS + 1; ++i) {
+        received = static_cast<uint8_t*>(pool.malloc(BLOCK_SIZE));
     }
-    ASSERT_EQUAL( received, expected );
+    ASSERT_EQUAL(received, expected);
 }
-
 
 #include <future>
-void multiplyAllocate( PoolAllocator& pool ) {
-    for (auto i = 0; i < 100000; ++i) {
-        std::uint8_t* received = static_cast<uint8_t*>( pool.malloc( BLOCK_SIZE ) );
-        pool.free( received );
-        if (i == 100000 / 2) {
-            int a;
-        }
-    }
-}
 void MultipleThreadsAllocate() {
     PoolAllocator pool;
-
     auto thread1 = async([&pool] {
-        multiplyAllocate(pool);
+        for (auto i = 0; i < 100000; ++i) {
+            std::uint8_t* received = static_cast<uint8_t*>(pool.malloc(BLOCK_SIZE));
+            if (received != nullptr) {
+                pool.free(received);
+            }
+        }
         }
     );
     auto thread2 = async([&pool] {
-        multiplyAllocate(pool);
+        for (auto i = 0; i < 100000; ++i) {
+            std::uint8_t* received = static_cast<uint8_t*>(pool.malloc(BLOCK_SIZE));
+            if (received != nullptr) {
+                pool.free(received);
+            }
+        }
         }
     );
     auto thread3 = async([&pool] {
-        multiplyAllocate(pool);
+        for (auto i = 0; i < 100000; ++i) {
+            std::uint8_t* received = static_cast<uint8_t*>(pool.malloc(BLOCK_SIZE));
+            if (received != nullptr) {
+                pool.free(received);
+            }   
+        }
         }
     );
     ASSERT_EQUAL( true, true );

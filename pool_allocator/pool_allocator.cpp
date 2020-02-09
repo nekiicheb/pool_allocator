@@ -23,7 +23,7 @@ void* PoolAllocator::malloc(size_t sizemem)
 		return nullptr;
 	}
 	MUTEX_LOCK(mallocMutex);
-	if ( head == nullptr ) {
+	if( head == nullptr ) {
 		/* нет свободных блоков */
 		THROW_BAD_ALLOC;
 		MUTEX_UNLOCK(mallocMutex);
