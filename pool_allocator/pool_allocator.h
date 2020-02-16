@@ -52,7 +52,7 @@ private:
 		Block *next;
 	};
 	Block* head = nullptr;
-
+	std::mutex headMutex;
     alignas(ALIGN) std::uint8_t pool[ NUMBER_OF_BLOCKS * BLOCK_SIZE ];
 
 public:
@@ -77,7 +77,7 @@ public:
     *      | data          | |next|            | | null_ptr|      |
     *      ||||||||||||||||| ||||||||||||||||||| ||||||||||||||||||
     */
-	void* malloc( size_t sizemem );
+	void* malloc(const size_t sizemem );
 
     /* освободить выделенный блок аллокатора
     *  запрещен вызов функции с указателем на пустой или не валидный участок памяти

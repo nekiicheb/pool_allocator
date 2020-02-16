@@ -58,37 +58,47 @@ void AllocateFromOverflowPool() {
     ASSERT_EQUAL(received, expected);
 }
 
+void MultipleAllocate(PoolAllocator& pool) {
+	for (auto i = 0; i < 100000; ++i) {
+		std::uint8_t* received = static_cast<uint8_t*>(pool.malloc(BLOCK_SIZE));
+		if (received != nullptr) {
+			pool.free(received);
+		}
+	}
+}
+
 #include <future>
+#include <set>
+
 void MultipleThreadsAllocate() {
     PoolAllocator pool;
-    auto thread1 = async([&pool] {
-        for (auto i = 0; i < 100000; ++i) {
-            std::uint8_t* received = static_cast<uint8_t*>(pool.malloc(BLOCK_SIZE));
-            if (received != nullptr) {
-                pool.free(received);
-            }
-        }
-        }
-    );
-    auto thread2 = async([&pool] {
-        for (auto i = 0; i < 100000; ++i) {
-            std::uint8_t* received = static_cast<uint8_t*>(pool.malloc(BLOCK_SIZE));
-            if (received != nullptr) {
-                pool.free(received);
-            }
-        }
-        }
-    );
-    auto thread3 = async([&pool] {
-        for (auto i = 0; i < 100000; ++i) {
-            std::uint8_t* received = static_cast<uint8_t*>(pool.malloc(BLOCK_SIZE));
-            if (received != nullptr) {
-                pool.free(received);
-            }   
-        }
-        }
-    );
-    ASSERT_EQUAL( true, true );
+    std::multiset<uint8_t*> expectedPtrs;
+
+    for(auto i = 0; i < NUMBER_OF_BLOCKS; ++i ) {
+        expectedPtrs.insert( static_cast<uint8_t*>( pool.malloc( BLOCK_SIZE ) ) );
+    }
+    for( auto& expectedPtr : expectedPtrs ) {
+        pool.free( expectedPtr );
+    }
+
+	std::thread thread0( MultipleAllocate, std::ref( pool ) );
+	std::thread thread1( MultipleAllocate, std::ref( pool ) );
+	std::thread thread2( MultipleAllocate, std::ref( pool ) );
+
+	thread0.join();
+	thread1.join();
+	thread2.join();
+
+    std::multiset<uint8_t*> receivedPtrs;
+    uint8_t* receivePtr;
+    while( ( receivePtr = static_cast<uint8_t*>( pool.malloc( BLOCK_SIZE ) ) ) != nullptr ) {
+        receivedPtrs.insert( receivePtr );
+    }
+    bool isEqual = false;
+    if( receivedPtrs == expectedPtrs ) {
+        isEqual = true;
+    }
+    ASSERT_EQUAL( isEqual, true );
 }
 
 int main() {

@@ -16,5 +16,6 @@
 
 #include <mutex>
 #define MUTEX_CREATE( name ) std::mutex name
+#define MUTEX_LOCK_RAII( name ) std::lock_guard<std::mutex> lock(name)
 #define MUTEX_LOCK( name ) name.lock();
 #define MUTEX_UNLOCK( name ) name.unlock();
